@@ -1,0 +1,12 @@
+{
+  "src": [
+    "pages/Index",
+    "pages/mine/Controller/QQMineController",
+    "pages/mall/Controller/QQMallController",
+    "pages/home/Controller/QQHomeController",
+    "pages/tabbar/TabsPage",
+    "common/webview/QQWebviewController",
+    "pages/home/View/Segment/TabSegmentPage",
+    "pages/home/View/InfoItem/QQInfoItemPage"
+  ]
+}
