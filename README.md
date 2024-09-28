@@ -609,11 +609,11 @@ struct QQWebviewController {
 
 正常在开发中运行某个页面，我们都是使用预览器，可以实时看某一个页面的效果，比较方便。但是预览器只能在pages页面进行使用。使用华为模拟器就可以一键运行整个项目，效果就比较好。
 
-##### 注意：使用模拟器需要提前进行申请并下载
+#### 注意：使用模拟器需要提前进行申请并下载
 
-具体的模拟器申请可以参考：[https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V5/ide-emulator-create-V5](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V5/ide-emulator-create-V5)
+具体的模拟器申请可以参考：[华为模拟器申请](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V5/ide-emulator-create-V5)
 
-模拟器使用中遇见问题可以参考：
+模拟器使用中遇见问题可以参考：[鸿蒙系统HarmonyOS-ArkTS项目开发问题汇总](https://www.jianshu.com/p/31ccb3e9b32c?v=1727520825111)
 
 -----------------------------------------------------
 【未完待续】
