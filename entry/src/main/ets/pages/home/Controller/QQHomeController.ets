@@ -9,7 +9,7 @@ import { QQInfoListBody,
 import { router } from '@kit.ArkUI'
 import { TabSegmentPage } from '../View/Segment/TabSegmentPage'
 import { QQInfoItemPage } from '../View/InfoItem/QQInfoItemPage'
-import { ListView, RefreshController, RefreshDataSource } from '@abner/refresh'
+import { ListView, RefreshController, RefreshLayoutStatusModel, LoadMoreLayoutStatusModel } from '@abner/refresh'
 
 @Entry
 @Component
@@ -156,6 +156,24 @@ export struct QQHomeController {
     .height('100%')
   }
 
+  @Builder
+  refreshHeader(model: RefreshLayoutStatusModel): void {
+    Text("refreshHeader 当前状态：" + model.status)
+      .width("100%")
+      .textAlign(TextAlign.Center)
+      .height(80)
+      .backgroundColor(Color.Pink)
+  }
+
+  @Builder
+  loadFooter(model: LoadMoreLayoutStatusModel) {
+    Text("loadFooter 当前状态：" + model.status)
+      .width("100%")
+      .textAlign(TextAlign.Center)
+      .height(80)
+      .backgroundColor(Color.Pink)
+  }
+
   // 页面入口
   build() {
     RelativeContainer() {
@@ -233,6 +251,8 @@ export struct QQHomeController {
             itemLayout: (item, index) => this.itemLayout(item, index), //条目布局
             controller: this.controller, //控制器，负责关闭下拉和上拉
             isLazyData: false,//禁止懒加载，也就是使用ForEach进行数据加载
+            // headerRefreshLayout:(model: RefreshLayoutStatusModel) => this.refreshHeader(model),
+            // footerLoadLayout:(model: LoadMoreLayoutStatusModel) => this.loadFooter(model),
             onRefresh: () => {
               //下拉刷新
               this.loadRequestData()
