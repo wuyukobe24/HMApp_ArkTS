@@ -5,7 +5,8 @@
 #### 四、数据封装
 #### 五、路由跳转
 #### 六、webview加载
-#### 七、华为模拟器的使用
+#### 七、三方库的接入- refresh下拉刷新和上拉加载
+#### 八、华为模拟器的使用
 ------------------------------------
 #### 本文主要介绍一个华为鸿蒙系统（HarmonyOS）使用ArkTS语言开发的实战项目，需要有一定的ArkTS基础。
 > 声明：项目中展示数据皆为抓包获取，仅用于项目练手，无商业行为。
@@ -605,7 +606,127 @@ struct QQWebviewController {
   }
 }
 ```
-### 七、华为模拟器的使用
+
+### 七、三方库的接入- refresh下拉刷新和上拉加载
+#### 引入三方控件 refresh
+```
+ohpm install @abner/refresh
+```
+输出以下信息则表示引入成功：
+```
+└─[0] <git:(main ba34beb✱) > ohpm install @abner/refresh
+ohpm INFO: MetaDataFetcher fetching meta info of package '@abner/refresh' from https://ohpm.openharmony.cn/ohpm/
+ohpm INFO: fetch meta info of package '@abner/refresh' success https://ohpm.openharmony.cn/ohpm/@abner/refresh
+install completed in 0s 177ms
+```
+#### refresh代码使用
+在需要刷新的page页面引入头文件：
+```
+import { ListView, RefreshController, RefreshLayoutStatusModel, LoadMoreLayoutStatusModel } from '@abner/refresh'
+```
+声明一个刷新的控制器:
+```
+// 刷新控件
+controller: RefreshController = new RefreshController() //刷新控制器，声明全局变量
+```
+###### 在要刷新的地方添加refresh自带的刷新控件 ListView（即将系统的滑动控件，比如列表控件List、网格控件Grid等替换成 refresh自带的列表ListView、 网格GridView、瀑布流StaggeredGridView等控件），同时去设置以下信息：
+* items：【数据源】如果是纯列表，可以将请求获取的列表数据赋值到items（比如items: this.sourceArray），并在下一个参数itemLayout中去获取每一个item的信息。如果滑动列表包括一些头header，比如 header中有banner要跟着一起滑动，这时候可以将items设置成[1]，具体到itemLayout里面就可以使用全部自定义page了。
+* itemLayout：自定义每个item。如果items是列表数据源，则 itemLayout 中只需要自定义每个item信息即可。如果将items设置成[1]，则itemLayout可以自定义整个List视图。
+* controller：即声明的刷新控制器 controller: RefreshController。
+* onRefresh：下拉刷新的回调方法。
+* onLoadMore：上拉加载的回调方法。
+* headerRefreshLayout：自定义的刷新header。不写即使用默认的刷新header。
+* footerLoadLayout：自定义刷新footer。不写即使用默认的刷新footer。
+```
+ListView({
+  items: [1], //数据源 数组,任意类型
+  itemLayout: (item, index) => this.itemLayout(item, index), //条目布局
+  controller: this.controller, //控制器，负责关闭下拉和上拉
+  isLazyData: false,//禁止懒加载，也就是使用ForEach进行数据加载
+  headerRefreshLayout:(model: RefreshLayoutStatusModel) => this.refreshHeader(model),
+  footerLoadLayout:(model: LoadMoreLayoutStatusModel) => this.loadFooter(model),
+  onRefresh: () => {
+    //下拉刷新
+    this.loadRequestData()
+  },
+  onLoadMore: () => {
+    //上拉加载
+    this.loadRequestData()
+  }
+})
+  .width('100%')
+  .height('100%')
+```
+#### 自定义的 itemLayout
+```
+@Builder
+itemLayout(item: Object, index: number): void {
+  // 列表
+  List() {
+    ListItemGroup({
+      header:this.CustomHeader
+    })
+    ForEach(this.infoListArray, (item:QQInfoListFeedsInfo, index) => {
+      ListItem() {
+        // 列表item
+        QQInfoItemPage({
+          body:item.feedNews?.body,
+          footer:item.feedNews?.footer
+        })
+          .backgroundColor(Color.White)
+      }
+      .width('100%')
+      .height(100)
+      .onClick(() => {
+        router.pushUrl({
+          url:'common/webview/QQWebviewController',
+          params:{
+            url:''
+          }
+        })
+      })
+    })
+  }
+  .width('100%')
+  .height('100%')
+}
+```
+#### 自定义刷新header和footer
+只需要在ListView 中实现自定义的header和footer即可。即 headerRefreshLayout 和 footerLoadLayout。
+```
+headerRefreshLayout:(model: RefreshLayoutStatusModel) => this.refreshHeader(model),
+footerLoadLayout:(model: LoadMoreLayoutStatusModel) => this.loadFooter(model),
+```
+自定义的header和footer：
+```
+@Builder
+refreshHeader(model: RefreshLayoutStatusModel): void {
+  Text("refreshHeader 当前状态：" + model.status)
+    .width("100%")
+    .textAlign(TextAlign.Center)
+    .height(80)
+    .backgroundColor(Color.Pink)
+}
+
+@Builder
+loadFooter(model: LoadMoreLayoutStatusModel) {
+  Text("loadFooter 当前状态：" + model.status)
+    .width("100%")
+    .textAlign(TextAlign.Center)
+    .height(80)
+    .backgroundColor(Color.Pink)
+}
+```
+#### 在网络请求结束的地方加上结束刷新的方法：
+```
+// 结束刷新
+this.controller.finishRefresh() //关闭下拉刷新，在数据请求回后进行关闭
+this.controller.finishLoadMore() //关闭上拉加载,在数据请求回后进行关闭
+```
+具体refresh的接入和使用请参考文章：[鸿蒙HarmonyOS三方库刷新控件refresh的接入和使用
+](https://www.jianshu.com/p/9a6553e46dad)
+
+### 八、华为模拟器的使用
 
 正常在开发中运行某个页面，我们都是使用预览器，可以实时看某一个页面的效果，比较方便。但是预览器只能在pages页面进行使用。使用华为模拟器就可以一键运行整个项目，效果就比较好。
 
