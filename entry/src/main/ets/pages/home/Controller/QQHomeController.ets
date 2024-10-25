@@ -9,6 +9,7 @@ import { QQInfoListBody,
 import { router } from '@kit.ArkUI'
 import { TabSegmentPage } from '../View/Segment/TabSegmentPage'
 import { QQInfoItemPage } from '../View/InfoItem/QQInfoItemPage'
+import { ListView, RefreshController, RefreshDataSource } from '@abner/refresh'
 
 @Entry
 @Component
@@ -23,18 +24,13 @@ export struct QQHomeController {
   @State iconListArray:Array<QQIconBody> = Array<QQIconBody>()
   // 列表数据
   @State infoListArray:Array<QQInfoListFeedsInfo> = Array<QQInfoListFeedsInfo>()
+  // 刷新控件
+  controller: RefreshController = new RefreshController() //刷新控制器，声明全局变量
 
   // 生命周期
   aboutToAppear() {
     console.log('1 aboutToAppear')
-    // 请求首页segment列表数据
-    this.loadHomeRequestSegmentListData()
-    // 请求banner数据
-    this.loadHomeRequestBannerData()
-    // 请求金刚区数据
-    this.loadHomeRequestIconData()
-    // 请求首页资讯列表数据
-    this.loadHomeRequestInfoListData()
+    this.loadRequestData()
   }
 
   aboutToDisappear() {
@@ -55,6 +51,18 @@ export struct QQHomeController {
 
   onDidBuild() {
     console.log('6 onDidBuild')
+  }
+
+  // 请求数据
+  loadRequestData() {
+    // 请求首页segment列表数据
+    this.loadHomeRequestSegmentListData()
+    // 请求banner数据
+    this.loadHomeRequestBannerData()
+    // 请求金刚区数据
+    this.loadHomeRequestIconData()
+    // 请求首页资讯列表数据
+    this.loadHomeRequestInfoListData()
   }
 
   // header
@@ -114,6 +122,38 @@ export struct QQHomeController {
       .width('100%')
       .backgroundColor(Color.White)
     }
+  }
+
+  @Builder
+  itemLayout(item: Object, index: number): void {
+    // 课程列表
+    List() {
+      ListItemGroup({
+        header:this.CustomHeader
+      })
+      ForEach(this.infoListArray, (item:QQInfoListFeedsInfo, index) => {
+        ListItem() {
+          // 列表item
+          QQInfoItemPage({
+            body:item.feedNews?.body,
+            footer:item.feedNews?.footer
+          })
+            .backgroundColor(Color.White)
+        }
+        .width('100%')
+        .height(100)
+        .onClick(() => {
+          router.pushUrl({
+            url:'common/webview/QQWebviewController',
+            params:{
+              url:''
+            }
+          })
+        })
+      })
+    }
+    .width('100%')
+    .height('100%')
   }
 
   // 页面入口
@@ -188,34 +228,22 @@ export struct QQHomeController {
         })
         // 中间内容
         Column() {
-          // 课程列表
-          List() {
-            ListItemGroup({
-              header:this.CustomHeader
-            })
-            ForEach(this.infoListArray, (item:QQInfoListFeedsInfo, index) => {
-              ListItem() {
-                // 列表item
-                QQInfoItemPage({
-                  body:item.feedNews?.body,
-                  footer:item.feedNews?.footer
-                })
-                  .backgroundColor(Color.White)
-              }
-              .width('100%')
-              .height(100)
-              .onClick(() => {
-                router.pushUrl({
-                  url:'common/webview/QQWebviewController',
-                  params:{
-                    url:''
-                  }
-                })
-              })
-            })
-          }
-          .width('100%')
-          .height('100%')
+          ListView({
+            items: [1], //数据源 数组,任意类型
+            itemLayout: (item, index) => this.itemLayout(item, index), //条目布局
+            controller: this.controller, //控制器，负责关闭下拉和上拉
+            isLazyData: false,//禁止懒加载，也就是使用ForEach进行数据加载
+            onRefresh: () => {
+              //下拉刷新
+              this.loadRequestData()
+            },
+            onLoadMore: () => {
+              //上拉加载
+              this.loadRequestData()
+            }
+          })
+            .width('100%')
+            .height('100%')
         }
         .margin({
           top:54
@@ -234,8 +262,14 @@ export struct QQHomeController {
       let dataModel:QQChannelDataModel = JSON.parse(str)
       this.channelArray = dataModel.data as Array<QQChannelModel>
       console.log('home segment 数据 .data ',JSON.parse(str))
+      // 结束刷新
+      this.controller.finishRefresh() //关闭下拉刷新，在数据请求回后进行关闭
+      this.controller.finishLoadMore() //关闭上拉加载,在数据请求回后进行关闭
     }, (error) => {
       console.log('home segment 数据 error ',error)
+      // 结束刷新
+      this.controller.finishRefresh() //关闭下拉刷新，在数据请求回后进行关闭
+      this.controller.finishLoadMore() //关闭上拉加载,在数据请求回后进行关闭
     })
   }
 
