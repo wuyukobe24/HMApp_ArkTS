@@ -314,6 +314,25 @@ export struct QQHomeController {
 
   // 请求金刚区数据
   loadHomeRequestIconData() {
+    this.viewModel.loadHomeRequestIconDataNew((data) => {
+      console.log('home Icon 数据 .data : ',data.data)
+      console.log('home Icon 数据 code = ' + data.code?.toString())
+      console.log('home Icon 数据 msg = ' + data.msg)
+      // 刷新数据
+      let dataModel:QQIconData = data.data as QQIconData
+      let feedsInfoArray = dataModel.feedsInfo as Array<QQIconFeedsInfo>
+      if (feedsInfoArray.length > 0) {
+        let feedsInfo = feedsInfoArray[0]
+        let feedNews = feedsInfo.feedNews
+        this.iconListArray = feedNews?.body as Array<QQIconBody>
+      }
+    }, (error) => {
+      console.log('home Icon 数据 error ',error)
+    })
+  }
+
+  // 请求金刚区数据【不使用了，只是用来记录做对比】
+  loadHomeRequestIconData2() {
     this.viewModel.loadHomeRequestIconData((str) => {
       console.log('home Icon 数据',str)
       let model:QQIconModel = JSON.parse(str)

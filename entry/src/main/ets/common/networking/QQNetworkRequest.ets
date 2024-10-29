@@ -1,3 +1,5 @@
+// 使用系统网络框架 @ohos.net.http 进行网络请求，对获取的json需要手动解析后使用。
+
 import http from '@ohos.net.http'
 import { JSON } from '@kit.ArkTS';
 
