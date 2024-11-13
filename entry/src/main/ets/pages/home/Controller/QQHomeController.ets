@@ -10,6 +10,7 @@ import { router } from '@kit.ArkUI'
 import { TabSegmentPage } from '../View/Segment/TabSegmentPage'
 import { QQInfoItemPage } from '../View/InfoItem/QQInfoItemPage'
 import { ListView, RefreshController, RefreshLayoutStatusModel, LoadMoreLayoutStatusModel } from '@abner/refresh'
+import { NetLoadingDialog } from '@abner/net'
 
 @Entry
 @Component
@@ -26,6 +27,15 @@ export struct QQHomeController {
   @State infoListArray:Array<QQInfoListFeedsInfo> = Array<QQInfoListFeedsInfo>()
   // 刷新控件
   controller: RefreshController = new RefreshController() //刷新控制器，声明全局变量
+  // loading控件
+  private dialogController = new CustomDialogController({
+    builder: NetLoadingDialog({
+      loadingText: '加载中...'
+    }),
+    autoCancel: false,
+    customStyle: true,
+    alignment: DialogAlignment.Center
+  })
 
   // 生命周期
   aboutToAppear() {
@@ -55,6 +65,8 @@ export struct QQHomeController {
 
   // 请求数据
   loadRequestData() {
+    // 添加请求loading
+    this.dialogController.open()
     // 请求首页segment列表数据
     this.loadHomeRequestSegmentListData()
     // 请求banner数据
@@ -285,11 +297,15 @@ export struct QQHomeController {
       // 结束刷新
       this.controller.finishRefresh() //关闭下拉刷新，在数据请求回后进行关闭
       this.controller.finishLoadMore() //关闭上拉加载,在数据请求回后进行关闭
+      // 结束loading
+      this.dialogController.close()
     }, (error) => {
       console.log('home segment 数据 error ',error)
       // 结束刷新
       this.controller.finishRefresh() //关闭下拉刷新，在数据请求回后进行关闭
       this.controller.finishLoadMore() //关闭上拉加载,在数据请求回后进行关闭
+      // 结束loading
+      this.dialogController.close()
     })
   }
 
